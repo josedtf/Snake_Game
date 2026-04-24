@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Border
   - Food
+  - Enemy
   layers:
   - Default
   - TransparentFX

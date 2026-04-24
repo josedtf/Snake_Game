@@ -14,9 +14,15 @@ public class snakeMovement : MonoBehaviour
 
     public GameObject UIpanel;
     public GameObject gameoverpanel;
-    public float mapLimitX = 15.5f;
-    public float mapLimitZ = 15.5f;
+    public float mapLimitX = 14f;
+    public float mapLimitZ = 14f;
+    public float gridSize = 1f;
     public TextMeshProUGUI Score;
+    public TextMeshProUGUI finalScoreText;
+
+    public AudioSource hitSound;
+
+    public EnemySpawner enemySpawner;
 
 
     private Vector3 direction = Vector3.right;
@@ -36,6 +42,8 @@ public class snakeMovement : MonoBehaviour
         }
 
         StartCoroutine(MoveCoroutine());
+
+        enemySpawner = FindFirstObjectByType<EnemySpawner>();
     }
 
     void Update()
@@ -79,7 +87,7 @@ public class snakeMovement : MonoBehaviour
     {
         positions.Insert(0, transform.position);
 
-        transform.position += direction;
+        transform.position += direction * gridSize;
 
         for (int i = 1; i < segments.Count && i - 1 < positions.Count; i++)
         {
@@ -101,7 +109,6 @@ public class snakeMovement : MonoBehaviour
         if (pos.x > mapLimitX || pos.x < -mapLimitX ||
             pos.z > mapLimitZ || pos.z < -mapLimitZ)
         {
-            Debug.Log("Hit map limit");
             GameOverFunc();
         }
     }
@@ -116,6 +123,14 @@ public class snakeMovement : MonoBehaviour
 
         score ++;
         Score.text = "Score: " + score.ToString();
+
+        enemySpawner.TrySpawnEnemies(score);
+    }
+
+    public void DecreaseScore()
+    {
+        score--;
+        Score.text = "Score: " + score.ToString();
     }
 
     public void CheckSelfCol()
@@ -129,11 +144,15 @@ public class snakeMovement : MonoBehaviour
         {
             if (headPosition == segments[i].position)
             {
-                Debug.Log("Self Collision Detected");
                 GameOverFunc();
                 break;
             }
         }
+    }
+
+    public List<Transform> GetSegments()
+    {
+        return segments;
     }
 
     public void GameOverFunc()
@@ -143,7 +162,9 @@ public class snakeMovement : MonoBehaviour
 
         UIpanel.SetActive(false);
         gameoverpanel.SetActive(true);
-        Debug.Log("Game Over");
+        hitSound.Play();
+
+        finalScoreText.text = "Final Score: " + score.ToString();
 
         for (int i = 0; i < segments.Count; i++)
         {
@@ -164,6 +185,5 @@ public class snakeMovement : MonoBehaviour
 
             rb.AddForce(200 * Vector3.up);
         }
-        
     }
 }
